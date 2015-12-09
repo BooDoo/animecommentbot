@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 
 #### TODO:
-# -pair text with image for later use!
 # - ... more corpora?
 # - Get it straight from CrunchyRoll! (yeah right...)
 
@@ -23,10 +22,11 @@ from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 ### GLOBALS
 verbose=True
 font_name='Open-Sans-Semibold'
+queue_separator='====='
 
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
-junk_re = re.compile("^\d+\. |^\s*[-\>]+| ?[A-Z]+: | -+ |[\<\[\(].+?[\]\)\>]")
+junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(].+?[\]\)\>]| \>\>")
 
 # Split on meaningful punctuation followed by a space
 # TODO: Avoid false splits like 'Dr.' and 'Mrs.'
@@ -379,14 +379,16 @@ def make_comment(count=1, out_path="output", vid_file=None):
 
     sub_opts = make_sub_opts(vid_clip);
 
+    with open("queue.txt", "a") as queue:
+        for n in range(1, count+1):
+            txt_line = get_tweetable_line(min_length=30, max_length=90)
+            debug(u"Using {} as subtitle...".format(txt_line))
+            txt_clip = sub_generator(txt_line, **sub_opts)
 
-    for n in range(0, count+1):
-        txt_line = get_tweetable_line(min_length=30, max_length=90)
-        debug(u"Using {} as subtitle...".format(txt_line))
-        txt_clip = sub_generator(txt_line, **sub_opts)
-
-        composed = CompositeVideoClip([vid_clip, txt_clip])
-        frame = composed.get_frame(choice(valid_range))
-        debug(u"Writing {0} of {1:03d}...".format(n, count) )
-        imwrite("{0}/{1}_{2:03d}.png".format(out_path, label, n), frame)
+            composed = CompositeVideoClip([vid_clip, txt_clip])
+            frame = composed.get_frame(choice(valid_range))
+            log(u"Writing {0} of {1:03d}...".format(n, count) )
+            image_path = "{0}/{1}_{2:03d}.png".format(out_path, label, n)
+            imwrite(image_path, frame)
+            queue.write("{0}{1}{2}\n".format(image_path, queue_separator, txt_line).encode('UTF-8') )
 

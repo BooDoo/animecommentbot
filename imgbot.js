@@ -3,40 +3,54 @@
 var fs = require("fs");
 var path = require("path");
 var Twit = require("twit");
+var _ = require("lodash");
 var credentials = readCredentials();
 var twitter = new Twit(credentials);
-var PICSPATH = "/home/boodoo/src/GitHub/animecommentbot/output"; // e.g. "/home/me/pics"
-var STATUSESPATH = process.env["STATUSESPATH"];
 
-// UTILITY: Get "random" element from array:
-function pick(arr) {
+var QUEUE_PATH = './queue.txt';
+var QUEUE_SEPARATOR = '=====';
+
+// UTILITY: Get "random" element from array, destructively:
+function sampleSplice(arr) {
   try {
     var index = Math.floor(Math.random() * arr.length);
-    return arr[index];
+    return arr.splice(index, 1)[0];
   } catch (e) {
+    console.error("Error splicing; returning provided array as-is");
     return arr;
   }
 }
 
-// Pick a status text to tweet out:
-function pickStatus(statuses) {
-  return "";
-  // statuses = statuses || readStatuses();
-  // return pick(statuses);
+function splitQueueItem(item) {
+  var separator = QUEUE_SEPARATOR || '=====';
+  return item.split(separator);
 }
 
-// Read files in a directory, return full path for one of them:
-function pickAPic(picsPath) {
-  picsPath = picsPath || PICSPATH || './images';
-  var picPath = pick(fs.readdirSync(picsPath));
-  console.log("Picked", picPath);
-  picPath = path.join(picsPath, picPath);
-  return picPath;
+function joinQueueItem(item) {
+  var separator = QUEUE_SEPARATOR || '=====';
+  return item.join(separator);
 }
 
-function readStatuses(statusesPath) {
-  statusesPath = statusesPath || STATUSESPATH || './statuses.txt';
-  var statuses = fs.readFileSync(statusesPath, {encoding: 'utf8'}).split(/\r\n|\r|\n/g);
+function serializeQueue(items, separator) {
+  separator = separator || QUEUE_SEPARATOR || '=====';
+  return items.map(joinQueueItem).join("\n");
+}
+
+function readQueue(queuePath) {
+  queuePath = queuePath || QUEUE_PATH || './queue.txt';
+  var queue = fs.readFileSync(queuePath, {encoding: 'utf8'}).split(/\r\n|\r|\n/g);
+  queue = _.without(queue, "");
+  queueItems = queue.map(splitQueueItem);
+  console.log("Read", queueItems.length, "items from", queuePath);
+  return queueItems;
+}
+
+function writeQueue(items, queuePath, separator) {
+  queuePath = queuePath || QUEUE_PATH || './queue.txt';
+  separator = separator || QUEUE_SEPARATOR || '=====';
+  fs.writeFileSync(queuePath, serializeQueue(items), 'utf8');
+  console.log("Wrote", items.length, "items to", queuePath);
+  return items;
 }
 
 // Read twitter API stuff from JSON file or environment variables:
@@ -58,16 +72,17 @@ function readCredentials() {
 }
 
 // Tweet with text and an image
-function tweetAPic(picPath) {
+function tweetAPic(picPath, status) {
   var picB64 = fs.readFileSync(picPath, {encoding: "base64"});
-  twitter.post("media/upload", { media_data: picB64 }, afterUpload);
+  var tweetMe = _.partialRight(afterUpload, status);
+  twitter.post("media/upload", { media_data: picB64 }, tweetMe);
 }
 
 // After uploading the media, add status text and tweet it out:
-function afterUpload(err, data) {
+function afterUpload(err, data, res, status) {
   if (!err) {
     var mediaId = data.media_id_string; // tell twitter which image to attach…
-    var status = "" // pickStatus();          // get some text content…
+    status = status || ""               // some text content…
     var params = { status: status, media_ids: [mediaId] }
     twitter.post("statuses/update", params, afterTweet);
   } else {
@@ -85,9 +100,15 @@ function afterTweet(err, data) {
     console.error(err);
   }
 }
- 
+
 // Do the thing:
 (function main() {
-  var picPath = pickAPic();
-  tweetAPic(picPath);
+  var queueItems = readQueue();             // Read image/caption combos (queue.txt)
+  var thisItem = sampleSplice(queueItems);  // Take a random line and remove it from the list
+  console.log("Working with:\n\t=>",
+              thisItem[0], "\n\t===>",
+              thisItem[1]);
+  tweetAPic(thisItem[0], thisItem[1]);      // Tweet the image along with associated caption
+  fs.unlinkSync(thisItem[0]);               // Delete the tweeted image
+  writeQueue(queueItems);                   // Re-write queue.txt with this line removed
 })();
