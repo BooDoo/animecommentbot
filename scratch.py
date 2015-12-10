@@ -19,6 +19,7 @@ from moviepy.video.VideoClip import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
+import crunchyroll
 from crunchyroll.apis.meta import MetaApi
 
 ### GLOBALS
@@ -445,3 +446,8 @@ def get_stream(episode, quality="720p"):
         error(u"Something has gone wrong getting media stream...")
         return None
 
+def get_res(stream):
+    info = stream.stream_info
+    width = info.findfirst('.//metadata/width').text
+    height = info.findfirst('.//metadata/height').text
+    return (int(width), int(height))
