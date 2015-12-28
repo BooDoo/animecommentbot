@@ -22,6 +22,8 @@ from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
 
+import youtube_dl
+
 ### GLOBALS
 verbose=True
 font_name='Open-Sans-Semibold'
@@ -451,3 +453,55 @@ def get_res(stream):
     width = info.findfirst('.//metadata/width').text
     height = info.findfirst('.//metadata/height').text
     return (int(width), int(height))
+
+#################################################################################
+#
+#
+#  Youtube-dl things!
+#
+#
+#################################################################################
+
+class MyLogger(object):
+    def debug(self, msg):
+        debug(msg)
+    def warning(self, msg):
+        log(msg)
+    def error(self, msg):
+        error(msg)
+
+def comment_hook(d):
+    if d['status'] == 'finished':
+        log(u"Done downloading, wrote to {}".format(d["filename"]))
+        log(u"Let's try to get some screenshots...")
+        make_comment(5, 'output', d["filename"])
+        log(u"Deleting {}...".format(d["filename"]))
+        os.unlink(d["filename"])
+
+## Some other ydl_opts:
+# mutex:
+# |  outtmpl            ## output file name template
+# |  useid              ## use video id for output filename
+#
+# 
+# other:
+#   download_archive    ## ????
+#   username / password ## duh
+#   max_filesize
+
+ydl_opts = {
+    'logger': MyLogger(),
+    'progress_hooks': [comment_hook],
+    'format': '480p' ## '720p-0'  # ???
+    # 'postprocessors': [{ }] # ???
+        }
+
+def dl_and_comment(urls):
+    if type(urls) is not list:
+        urls = [urls]
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        try:
+            ydl.download(urls)
+        except youtube_dl.DownloadError as e:
+            error("Trouble downloading {}?".format(urls))
+
