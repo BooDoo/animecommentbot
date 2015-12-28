@@ -1,5 +1,5 @@
 import pysrt as srt
-from utility import *
+from .utility import *
 
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
@@ -54,4 +54,4 @@ def print_srt(sub_file=None):
 srt.parse_srt = parse_srt
 srt.get_tweetable_lines = get_tweetable_lines
 srt.get_tweetable_line = get_tweetable_line
-src.print_srt = print_srt
+srt.print_srt = print_srt

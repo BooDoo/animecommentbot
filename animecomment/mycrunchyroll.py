@@ -1,9 +1,14 @@
+from .utility import *
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
-from random import choice, sample
 
 api = MetaApi()
-all_series = [series.name for series in api.list_anime_series(limit=1000)]
+all_series = []
+
+def fetch_all():
+    global all_series
+    all_series = [series.name for series in api.list_anime_series(limit=1000)]
+    return all_series
 
 def search_series(q):
     """

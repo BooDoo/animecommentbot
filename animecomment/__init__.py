@@ -1,35 +1,33 @@
-import os, sys, glob, json, re
-import requests, gzip, io, csv
-from random import choice, sample
-# from zipfile import ZipFile
-# from tempfile import TemporaryFile
-import pysrt as srt
-
 from __future__ import unicode_literals, print_function
+# import os, sys, glob, json, re
+# import requests, gzip, io, csv
+# from random import choice, sample
+# import pysrt as srt
 
-from videogrep import *
-from functools import partial
+# from videogrep import *
+# from functools import partial
 
-from imageio import imwrite
-from moviepy.video.VideoClip import *
-from moviepy.video.tools.subtitles import SubtitlesClip
-from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+# from imageio import imwrite
+# from moviepy.video.VideoClip import *
+# from moviepy.video.tools.subtitles import SubtitlesClip
+# from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
-import crunchyroll
-from crunchyroll.apis.meta import MetaApi
+# import crunchyroll
+# from crunchyroll.apis.meta import MetaApi
 
-from utility import *
-from mysrt import *
-from MyCrunchyroll import *
-from PrettyTextClip import PrettyTextClip
-from Subtitler import Subtitler
+import utility
+import mysrt as srt
+import corpus
+import mycrunchyroll as crunchyroll
+from prettytextclip import PrettyTextClip
+from subtitler import Subtitler
 
 ### GLOBALS
 verbose=True
 queue_separator='====='
 
 """ Establish a simple logger, using print() """
-logger = Logger()
+logger = utility.Logger()
 log = logger.log
 debug = logger.debug
 error = logger.error

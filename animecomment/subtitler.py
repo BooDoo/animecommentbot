@@ -1,9 +1,7 @@
-import os
-from utility import *
-from os import environ as ENV
+from .utility import *
 
 from moviepy.video.io.VideoFileClip import VideoFileClip
-from PrettyTextClip import PrettyTextClip
+from .prettytextclip import PrettyTextClip
 
 font_name= ENV.get('SUBTITLE_FONT', u"Open-Sans-Semibold")
 

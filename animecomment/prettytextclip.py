@@ -1,10 +1,10 @@
+from .utility import *
 import tempfile
 import subprocess as sp
 
 from moviepy.tools import subprocess_call
 from moviepy.config import get_setting
 from moviepy.video.VideoClip import *
-
 
 """ Anti-alias scaling factor """
 def aa_scale(src, factor):
@@ -14,8 +14,18 @@ def aa_scale(src, factor):
         return src*factor
 
 ### PrettyTextClip is like a TextClip but supports drop shadow and antialiased rendering
-### TODO: THERE'S GOT TO BE A BETTER WAY (clean up for PR against moviepy? Decorator?)
 class PrettyTextClip(TextClip):
+    default_opts = {
+            "txt": None, "filename": None, "size": None, "color": 'black',
+            "bg_color": 'transparent', "fontsize": None, "font": 'Courier',
+            "stroke_color": None, "stroke_width": 1, "method": 'label',
+            "kerning": None, "align": 'center', "interline": None,
+            "tempfilename": None, "temptxt": None,
+            "transparent": True, "remove_temp": True,
+            "shadow": None, "antialias": 4,
+            "print_cmd": False
+    }
+
     def __init__(self, txt=None, filename=None, size=None, color='black',
                  bg_color='transparent', fontsize=None, font='Courier',
                  stroke_color=None, stroke_width=1, method='label',
@@ -25,6 +35,7 @@ class PrettyTextClip(TextClip):
                  shadow=None, antialias=4,
                  print_cmd=False):
 
+        # ADDED Antialiasing
         aa_factor= 1 if not antialias else antialias
 
         if txt is not None:
@@ -51,7 +62,7 @@ class PrettyTextClip(TextClip):
                        2 if shadow[3] is None else shadow[3])
 
         cmd = ( [get_setting("IMAGEMAGICK_BINARY"),
-               "-density", str(aa_scale(72, aa_factor)),
+               "-density", str(aa_scale(72, aa_factor)), # ADDED Anti-aliasing
                "-background", bg_color,
                "-fill", color,
                "-font", font])
@@ -74,12 +85,15 @@ class PrettyTextClip(TextClip):
             tempfile_fd, tempfilename = tempfile.mkstemp(suffix='.png')
             os.close(tempfile_fd)
 
+        # ADDED Dropshadow rendering
         if shadow is not None:
             shadow_cmd = ( ["(", "+clone",
                           "-shadow", "%sx%s+%s+%s" % (tuple([shadow[0]]) + aa_scale(shadow[1:], aa_factor)),
                           ")",
                           "-compose", "DstOver",
                           "-flatten"])
+        else:
+            shadow_cmd = []
 
         cmd += ["%s:%s" % (method, txt)]
         cmd += shadow_cmd
@@ -88,7 +102,6 @@ class PrettyTextClip(TextClip):
 
         if print_cmd:
             print( " ".join(cmd) )
-
         try:
             subprocess_call(cmd, verbose=verbose)
         except (IOError,OSError) as err:
@@ -101,12 +114,14 @@ class PrettyTextClip(TextClip):
                     "that the path you specified is incorrect" ))
             raise IOError(error)
 
-        # Weird error when tempfilename is Unicode instead of str, so...
+        # WORKAROUND: Weird error when tempfilename is Unicode instead of str, so...
         temp_img = imread(tempfilename)
         ImageClip.__init__(self, temp_img, transparent=transparent)
+        # END WORKAROUND
         self.txt = txt
         self.color = color
         self.stroke_color = stroke_color
+        self.cmd = cmd # ADDED store cmd list
 
         if remove_temp:
             if os.path.exists(tempfilename):
