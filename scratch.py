@@ -31,7 +31,7 @@ queue_separator='====='
 
 ## For Crunchyroll:
 api = MetaApi()
-all_series = [series.name for series in api.list_anime_series()]
+all_series = [series.name for series in api.list_anime_series(limit=1000)]
 
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
@@ -397,7 +397,7 @@ def make_comment(count=1, out_path="output", vid_file=None):
             composed = CompositeVideoClip([vid_clip, txt_clip])
             frame = composed.get_frame(choice(valid_range))
             log(u"\tWriting {0} of {1:03d}...".format(n, count) )
-            image_path = "{0}/{1}_{2:03d}.png".format(out_path, label, n)
+            image_path = u"{0}/{1}_{2:03d}.png".format(out_path, label, n)
             imwrite(image_path, frame)
             queue.write(u"{0}{1}{2}\n".format(image_path, queue_separator, txt_line).encode('utf8', 'replace') )
 
@@ -505,3 +505,34 @@ def dl_and_comment(urls):
         except youtube_dl.DownloadError as e:
             error("Trouble downloading {}?".format(urls))
 
+
+#######################################################
+#
+#
+# When run as a script...
+#
+#
+#######################################################
+
+def main():
+    import argparse
+    global verbose
+
+    parser = argparse.ArgumentParser(description=u"Download videos, randomly select frames, put text over them.")
+    parser.add_argument('--count', '-c', dest='count', type=int, default=5)
+    parser.add_argument('--verbose', '-v', dest='verbose', action="store_true", default=False)
+
+    args = parser.parse_args()
+    verbose = args.verbose
+    count = args.count
+
+    try:
+        urls = [choice( free_eps(series) ).url for series in get_random_series(count)]
+    except:
+        urls = []
+        raise
+
+    dl_and_comment(urls)
+
+if __name__ == "__main__":
+    main()
