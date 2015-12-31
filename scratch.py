@@ -450,6 +450,12 @@ def get_stream(episode, quality="720p"):
         error(u"Something has gone wrong getting media stream...")
         return None
 
+def has_softsubs(ep):
+    return len( api.get_subtitle_stubs(ep) ) > 0
+
+def good_eps(series):
+    return [ep for ep in free_eps(series) if has_softsubs(ep)]
+
 def get_res(stream):
     info = stream.stream_info
     width = info.findfirst('.//metadata/width').text
@@ -507,3 +513,20 @@ def dl_and_comment(urls):
         except youtube_dl.DownloadError as e:
             error("Trouble downloading {}?".format(urls))
 
+
+def get_urls_to_dl(count=3):
+    ## Get `count` series, try to get one free episode without hardsubs from each series
+    series_pool = get_random_series(count)
+    episode_pool = [good_eps(series) for series in series_pool]
+    single_episodes = [choice(episodes) for episodes in episode_pool if len(episodes)]
+    urls = [ep.url for ep in single_episodes]
+    return urls
+
+
+
+if __name__ == "__main__":
+    global verbose
+    verbose = False
+
+    urls = get_urls_to_dl(5)
+    dl_and_comment(urls)
