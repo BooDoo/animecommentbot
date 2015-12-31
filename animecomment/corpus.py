@@ -1,12 +1,13 @@
 from .utility import *
-from .parsers import SrtParser, TxtParser
+from .parsers import AssParser, SrtParser, TxtParser
 
 class Corpus(object):
-    def __init__(self, paths=["corpora"], formats=["srt", "txt"], parsers=None):
+    def __init__(self, paths=["corpora"], formats=["ass", "srt", "txt"], parsers=None):
         paths = force_iterable(paths)
         formats = force_iterable(formats)
 
         self.parsers = {
+            "ass": AssParser(paths),
             "srt": SrtParser(paths),
             "txt": TxtParser(paths)
         }

@@ -3,7 +3,7 @@ from .utility import *
 
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
-junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(].+?[\]\)\>]| \>\>")
+junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\>\}]| \>\>")
 
 # Split on meaningful punctuation followed by a space
 # TODO: Avoid false splits like 'Dr.' and 'Mrs.'
@@ -11,7 +11,8 @@ junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(].+?[\]\)\>]
 split_re = re.compile("([\.\?\!]+\"?) +")
 
 def parse_srt(sub_file=None):
-    sub_file = sub_file or get_random_srt()
+    # random sourcing now handled in the Corpus class:
+    # sub_file = sub_file or get_random_srt()
 
     debug(u"Using {} as SRT".format(sub_file))
 
