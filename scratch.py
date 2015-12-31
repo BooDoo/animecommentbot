@@ -238,8 +238,10 @@ def make_sub_opts(vidclip):
     # render height leaves a margin below rendered subtitles
     render_height = int(round(h * 0.965))
 
-    # font_factor 19.0 gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
-    font_factor = 19.0
+    # h / font_factor (19.0) gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
+    # h / font_factor (16.0) gets us fontsize=30 at 480p
+    # w / font_factor (22.0) depends on aspect ratio; for 480 4:3~~>29, 16:9~~>39
+    font_factor = 16.0
 
     sub_opts = {
         "size": ( w, render_height ),
