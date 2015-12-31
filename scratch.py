@@ -31,7 +31,7 @@ queue_separator='====='
 
 ## For Crunchyroll:
 api = MetaApi()
-all_series = [series.name for series in api.list_anime_series()]
+all_series = [series.name for series in api.list_anime_series(limit=1000)]
 
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
@@ -522,11 +522,34 @@ def get_urls_to_dl(count=3):
     urls = [ep.url for ep in single_episodes]
     return urls
 
+#######################################################
+#
+#
+# When run as a script...
+#
+#
+#######################################################
 
+def main():
+    import argparse
+    global verbose
+
+    parser = argparse.ArgumentParser(description=u"Download videos, randomly select frames, put text over them.")
+    parser.add_argument('--count', '-c', dest='count', type=int, default=5)
+    parser.add_argument('--verbose', '-v', dest='verbose', action="store_true", default=False)
+
+    args = parser.parse_args()
+    verbose = args.verbose
+    count = args.count
+
+    try:
+        urls = get_urls_to_dl(5)
+        dl_and_comment(urls)
+    except:
+        urls = []
+        raise
+
+    dl_and_comment(urls)
 
 if __name__ == "__main__":
-    global verbose
-    verbose = False
-
-    urls = get_urls_to_dl(5)
-    dl_and_comment(urls)
+    main()
