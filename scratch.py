@@ -399,7 +399,7 @@ def make_comment(count=1, out_path="output", vid_file=None):
             composed = CompositeVideoClip([vid_clip, txt_clip])
             frame = composed.get_frame(choice(valid_range))
             log(u"\tWriting {0} of {1:03d}...".format(n, count) )
-            image_path = "{0}/{1}_{2:03d}.png".format(out_path, label, n)
+            image_path = u"{0}/{1}_{2:03d}.png".format(out_path, label, n)
             imwrite(image_path, frame)
             queue.write(u"{0}{1}{2}\n".format(image_path, queue_separator, txt_line).encode('utf8', 'replace') )
 
