@@ -25,6 +25,8 @@ from crunchyroll.apis.meta import MetaApi
 import youtube_dl
 
 ### GLOBALS
+global verbose, font_name, queue_separator
+
 verbose=True
 font_name='Open-Sans-Semibold'
 queue_separator='====='
@@ -556,7 +558,7 @@ def main():
     count = args.count
 
     try:
-        urls = get_urls_to_dl(5)
+        urls = get_urls_to_dl(count+1)
         dl_and_comment(urls)
     except:
         urls = []
