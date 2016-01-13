@@ -357,13 +357,21 @@ def get_tweetable_lines(src=None, **kwargs):
     length_range = range(min_length, max_length+1)
 
     try:
-        src = parse_srt(src)
+        ext = os.path.splitext(src)[-1][1:].lower()
+        print("ext is {}".format(ext))
+        if ext == 'srt':
+            lines = parse_srt(src)
+        else:
+            lines = None
+            with open(src, "r") as f:
+                lines = f.readlines()
     except:
         error(u"Couldn't parse as SRT source: {}".format(src))
 
-    return list(l for l in src if len(l) in length_range)
+    return list(l.decode('utf-8', 'ignore').strip() for l in lines if len(l) in length_range)
 
 def get_tweetable_line(src=None, **kwargs):
+    src = src or get_random_srt()
     try:
         return choice(get_tweetable_lines(src, **kwargs))
     except IndexError:
@@ -395,7 +403,9 @@ def make_comment(count=1, out_path="output", vid_file=None):
 
     with open("queue.txt", "a") as queue:
         for n in range(1, count+1):
-            txt_line = get_tweetable_line(min_length=30, max_length=90)
+            ### this "None" will get a random SRT from corpora, by default.
+            ### Can override with specific source file
+            txt_line = get_tweetable_line(None, min_length=30, max_length=90)
             debug(u"Using {} as subtitle...".format(txt_line))
             txt_clip = sub_generator(txt_line, **sub_opts)
 
