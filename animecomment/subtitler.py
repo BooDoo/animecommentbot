@@ -9,11 +9,11 @@ font_name= ENV.get('SUBTITLE_FONT', u"Open-Sans-Semibold")
 default_opts = {
     "method": "caption",
     "align": "south",
-    "fontsize": 38,
+    "fontsize": 45,
     "color": "white",
     "stroke_color": "black",
     "stroke_width": 2,
-    "size": (1280,695),
+    "size": (1216,695),
     "font": font_name,
     "shadow": (90, 1, 2, 2), # Option to disable this for fast render?
     "antialias": 2 # Can be set to False, or to something like 4
@@ -36,14 +36,17 @@ class Subtitler(object):
         w, h = vidclip.size
         decoration_factor = int(round(h / 480.0))
 
-        # render height leaves a margin below rendered subtitles
-        render_height = int(round(h * 0.965))
+        # render_w/h leaves a margin below rendered subtitles
+        # ASSUMING WE DO set_pos("top") WHEN COMPOSITING FRAME
+        render_w = int(round(w * 0.95))
+        render_h = int(round(h * 0.965))
 
-        # font_factor 19.0 gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
-        font_factor = 19.0
+        # (h / font_factor [@ 19.0]) gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
+        #  .... @16 gets fontsize=30 at 480p
+        font_factor = 16.0
 
         sub_opts = {
-            "size": ( w, render_height ),
+            "size": ( render_w, render_h ),
             "fontsize": int(round(h / font_factor)),
             "stroke_width": decoration_factor,
             "shadow": (90, 1, decoration_factor, decoration_factor),
