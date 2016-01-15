@@ -26,6 +26,7 @@ class Subtitler(object):
 
     def sub_generator(self, txt, **kwargs):
         txt = clean_line(txt)
+        kwargs.update(self.settings)
         return PrettyTextClip(txt, **kwargs)
 
     def make_sub_opts(self, vidclip):
