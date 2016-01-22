@@ -370,7 +370,11 @@ def get_tweetable_lines(src=None, **kwargs):
     except:
         error(u"Couldn't parse as SRT source: {}".format(src))
 
-    return list(l.decode('utf-8', 'ignore').strip() for l in lines if len(l) in length_range)
+    try:
+        return list(l.strip() for l in lines if len(l) in length_range)
+    except:
+        return list(l.decode('utf-8', 'ignore').strip() for l in lines if len(l) in length_range)
+
 
 def get_tweetable_line(src=None, **kwargs):
     src = src or get_random_srt()
