@@ -145,7 +145,6 @@ class PrettyTextClip(TextClip):
                "-background", bg_color,
                "-fill", color,
                "-font", font])
-
         if fontsize is not None:
             cmd += ["-pointsize", "%d" % fontsize]
         if kerning is not None:
@@ -237,11 +236,9 @@ def make_sub_opts(vidclip):
     w, h = vidclip.size
     decoration_factor = int(round(h / 480.0))
 
-    # render height leaves a margin below rendered subtitles
-    render_height = int(round(h * 0.965))
-
-    # render width leaves margin on sides of rendered subtitles
-    render_width = int(round(w * 0.95))
+    # render_h/w leaves padding around subtitle space
+    render_h = int(round(h * 0.965))
+    render_w = int(round(w * 0.95))
 
     # h / font_factor (19.0) gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
     # h / font_factor (16.0) gets us fontsize=30 at 480p
@@ -249,7 +246,7 @@ def make_sub_opts(vidclip):
     font_factor = 16.0
 
     sub_opts = {
-        "size": ( render_width, render_height ),
+        "size": ( render_w, render_h ),
         "fontsize": int(round(h / font_factor)),
         "stroke_width": decoration_factor,
         "shadow": (90, 1, decoration_factor, decoration_factor),
@@ -264,7 +261,10 @@ def compose_subs(vid_file, sub_file):
     generator = partial(sub_generator, **sub_opts)
 
     txtclip = SubtitlesClip(sub_file, generator)
-    return CompositeVideoClip([vidclip, txtclip])
+    """
+        set_pos("top") will horizontally center and add bottom padding, assuming txtclip is smaller.
+    """
+    return CompositeVideoClip([vidclip, txtclip.set_pos('top')])
 
 def get_mid_frame(clip):
     return clip.get_frame(clip.duration * .5)
@@ -411,7 +411,7 @@ def make_comment(count=1, out_path="output", vid_file=None):
             debug(u"Using {} as subtitle...".format(txt_line))
             txt_clip = sub_generator(txt_line, **sub_opts)
 
-            composed = CompositeVideoClip([vid_clip, txt_clip])
+            composed = CompositeVideoClip([vid_clip, txt_clip.set_pos("top")])
             frame = composed.get_frame(choice(valid_range))
             log(u"\tWriting {0} of {1:03d}...".format(n, count) )
             image_path = u"{0}/{1}_{2:03d}.png".format(out_path, label, n)
@@ -559,12 +559,11 @@ def main():
 
     try:
         urls = get_urls_to_dl(count+1)
+        debug("We have {} urls...\n {}".format( len(urls), urls ))
         dl_and_comment(urls)
     except:
         urls = []
         raise
-
-    dl_and_comment(urls)
 
 if __name__ == "__main__":
     main()
