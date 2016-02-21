@@ -3,6 +3,10 @@ from .mysrt import srt
 from .myass import ass
 
 class Parser(object):
+    """ uses:
+        split_re, junk_re,
+        __init__, load, flatten, clean, split, parse
+    """
     split_re = None
     junk_re = None
 
