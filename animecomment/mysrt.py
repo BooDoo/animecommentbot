@@ -28,31 +28,9 @@ def parse_srt(sub_file=None):
 
     return split_subs
 
-def get_tweetable_lines(src=None, **kwargs):
-    min_length = kwargs.pop('min_length', 1)
-    max_length = kwargs.pop('max_length', 140)
-    length_range = range(min_length, max_length+1)
-
-    try:
-        src = parse_srt(src)
-    except:
-        error(u"Couldn't parse as SRT source: {}".format(src))
-
-    return list(l for l in src if len(l) in length_range)
-
-def get_tweetable_line(src=None, **kwargs):
-    try:
-        return choice(get_tweetable_lines(src, **kwargs))
-    except IndexError:
-        error(u"No suitable line found in SRT, trying another...")
-        return get_tweetable_line(src, **kwargs)
-
 def print_srt(sub_file=None):
     for i,l in enumerate(parse_srt(sub_file)):
         print(i,l)
 
-
 srt.parse_srt = parse_srt
-srt.get_tweetable_lines = get_tweetable_lines
-srt.get_tweetable_line = get_tweetable_line
 srt.print_srt = print_srt

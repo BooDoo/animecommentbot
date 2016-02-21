@@ -3,6 +3,7 @@ from random import choice, sample
 import os, re
 from os import environ as ENV
 import glob
+from slurfilter import blacklisted
 
 verbose=True
 
@@ -102,3 +103,22 @@ def files_from_path(inputpaths, usable_extensions):
             error(u"Given file instead of directory; hope that's what you meant to do!")
             found_files.append(inputpath)
     return uniqify(found_files)
+
+def get_tweetable_lines(src=None,min_length=1,max_length=127,count=None,use_filter=True):
+    length_range = range(min_length, max_length+1)
+
+    candidates = [l for l in src if len(l) in length_range]
+
+    if use_filter:
+        candidates = [l for l in candidates if blacklisted(l) == False]
+
+    if count is None:
+        return candidates
+    else:
+        return sample(candidates, count)
+
+def get_tweetable_line(src=None, *args, **kwargs):
+    try:
+        return choice(get_tweetable_lines(src, *args, **kwargs))
+    except IndexError:
+        error(u"No suitable line found...")
