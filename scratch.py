@@ -10,6 +10,7 @@ from random import choice, sample
 from zipfile import ZipFile
 from tempfile import TemporaryFile
 import pysrt as srt
+from HTMLParser import HTMLParser
 
 from videogrep import *
 from functools import partial
@@ -26,10 +27,17 @@ import youtube_dl
 
 ### GLOBALS
 global verbose, font_name, queue_separator
+global ny_endpoint, html_parser
+global memorable_path
 
 verbose=True
 font_name='Open-Sans-Semibold'
 queue_separator='====='
+
+ny_endpoint = "http://www.newyorker.com/cartoons/random/randomAPI1"
+html_parser = HTMLParser()
+
+memorable_path="/media/removable/sdcard/home/boodoo/Downloads/cornell/moviequotes.memorable_quotes.txt"
 
 ## For Crunchyroll:
 api = MetaApi()
@@ -145,6 +153,7 @@ class PrettyTextClip(TextClip):
                "-background", bg_color,
                "-fill", color,
                "-font", font])
+
         if fontsize is not None:
             cmd += ["-pointsize", "%d" % fontsize]
         if kerning is not None:
@@ -236,9 +245,11 @@ def make_sub_opts(vidclip):
     w, h = vidclip.size
     decoration_factor = int(round(h / 480.0))
 
-    # render_h/w leaves padding around subtitle space
-    render_h = int(round(h * 0.965))
-    render_w = int(round(w * 0.95))
+    # render height leaves a margin below rendered subtitles
+    render_height = int(round(h * 0.97))
+
+    # render width leaves margin on sides of rendered subtitles
+    render_width = int(round(w * 0.95))
 
     # h / font_factor (19.0) gets us fontsize=25 at 480p, 38 at 720p, and 57 at 1080p
     # h / font_factor (16.0) gets us fontsize=30 at 480p
@@ -246,7 +257,7 @@ def make_sub_opts(vidclip):
     font_factor = 16.0
 
     sub_opts = {
-        "size": ( render_w, render_h ),
+        "size": ( render_width, render_height ),
         "fontsize": int(round(h / font_factor)),
         "stroke_width": decoration_factor,
         "shadow": (90, 1, decoration_factor, decoration_factor),
@@ -261,10 +272,7 @@ def compose_subs(vid_file, sub_file):
     generator = partial(sub_generator, **sub_opts)
 
     txtclip = SubtitlesClip(sub_file, generator)
-    """
-        set_pos("top") will horizontally center and add bottom padding, assuming txtclip is smaller.
-    """
-    return CompositeVideoClip([vidclip, txtclip.set_pos('top')])
+    return CompositeVideoClip([vidclip, txtclip.set_pos("top")])
 
 def get_mid_frame(clip):
     return clip.get_frame(clip.duration * .5)
@@ -370,11 +378,7 @@ def get_tweetable_lines(src=None, **kwargs):
     except:
         error(u"Couldn't parse as SRT source: {}".format(src))
 
-    try:
-        return list(l.strip() for l in lines if len(l) in length_range)
-    except:
-        return list(l.decode('utf-8', 'ignore').strip() for l in lines if len(l) in length_range)
-
+    return list(l.decode('utf-8', 'ignore').strip() for l in lines if len(l) in length_range)
 
 def get_tweetable_line(src=None, **kwargs):
     src = src or get_random_srt()
@@ -387,6 +391,20 @@ def get_tweetable_line(src=None, **kwargs):
 def print_srt(sub_file=None):
     for i,l in enumerate(parse_srt(sub_file)):
         print(i,l)
+
+def decode(*args, **kwargs):
+    return html_parser.unescape(*args, **kwargs)
+
+def get_nyer_caption(min_length=30, max_length=90):
+    caption = ""
+    while (len(caption) < min_length) or (len(caption) > max_length):
+        caption = decode(requests.get(ny_endpoint).json()[0]['caption'])[1:-1]
+    return caption
+
+def process_memorable_lines(min_length=30, max_length=100):
+    with open(memorable_path) as f:
+        real_lines = [" ".join(line.split(" ")[1:]).strip() for line in f.readlines() if re.match('^\d{2,}', line) and len(line) >= min_length and len(line) <= max_length]
+    return real_lines
 
 ###################################################################
 #
@@ -406,13 +424,15 @@ def make_comment(count=1, out_path="output", vid_file=None):
     valid_range = range(earliest, latest+1)
 
     sub_opts = make_sub_opts(vid_clip);
-
     with open("queue.txt", "a") as queue:
+        real_lines = process_memorable_lines(20, 110)
         for n in range(1, count+1):
             ### this "None" will get a random SRT from corpora, by default.
             ### Can override with specific source file
-            txt_line = get_tweetable_line(None, min_length=30, max_length=90)
-            debug(u"Using {} as subtitle...".format(txt_line))
+            ### txt_line = get_nyer_caption(20, 110)
+            ### txt_line = get_tweetable_line("corpora/tentacle-rough.txt", min_length=30, max_length=90)
+            txt_line = choice(real_lines)
+            debug(u"Using {} as subtitle...".format(txt_line.encode('utf8', 'ignore')))
             txt_clip = sub_generator(txt_line, **sub_opts)
 
             composed = CompositeVideoClip([vid_clip, txt_clip.set_pos("top")])
@@ -563,11 +583,11 @@ def main():
 
     try:
         urls = get_urls_to_dl(count+1)
-        debug("We have {} urls...\n {}".format( len(urls), urls ))
         dl_and_comment(urls)
     except:
         urls = []
         raise
+
 
 if __name__ == "__main__":
     main()
