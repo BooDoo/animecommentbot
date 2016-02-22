@@ -2,67 +2,97 @@ from .utility import *
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
 
-api = MetaApi()
-all_series = []
+class Crunchyroll(object):
+    all_series = None
+    api = None
+    have_fetched = False
+    have_api = False
 
-def fetch_all():
-    global all_series
-    all_series = [series.name for series in api.list_anime_series(limit=1000)]
-    return all_series
+    @classmethod
+    def fetch_all(cls):
+        if cls.have_api is False:
+            cls.get_api()
+        cls.all_series = [series.name for series in cls.api.list_anime_series(limit=1000)]
+        cls.have_fetched = True
+        return cls.all_series
 
-def search_series(q):
-    """
-        Using `all_series` list of series names, fetch any series
-        containing 'q' in the name
+    @classmethod
+    def get_api(cls, *args, **kwargs):
+        cls.api = MetaApi(*args, **kwargs)
+        cls.have_api = True
+        return cls.api
 
-        Our search for `q` is case-insensitive
-        API search uses Crunchyroll's casing
-    """
-    matching_names = filter(lambda name: q.lower() in name.lower(), all_series)
-    matching_series = list(api.search_anime_series(name)[0] for name in matching_names)
-    return matching_series
+    def __init__(self, logger=None, verbose=False, force_fetch=False, force_api=False):
+        self.logger = logger or Logger(verbose=verbose)
+        self.debug, self.log, self.error = (self.logger.debug, self.logger.log, self.logger.error)
 
-def get_random_series(count=1):
-    random_series = [api.search_anime_series(name)[0] for name in sample(all_series, count)]
-    return random_series
+        if force_api is True or Crunchyroll.have_api is False:
+            self.debug("initiating API object...")
+            Crunchyroll.get_api()
 
-def free_eps(series):
-    try:
-        return [ep for ep in api.list_media(series) if ep.free_available]
-    except:
-        error(u"Something has gone wrong finding free episodes...")
-        return None
+        if force_fetch is True or Crunchyroll.have_fetched is False:
+            self.debug("fetching series names...")
+            Crunchyroll.fetch_all()
 
-def get_stream(episode, quality="720p"):
-    resolution = int( re.sub(r"\D", "", quality) )
+        self.api = Crunchyroll.api
+        self.series = Crunchyroll.all_series
 
-    if resolution > 480 and api.is_premium("anime") is False:
-        error(u"Not authorized for premium Anime. Reducing to 480p")
-        quality = "480p"
-        resolution = 480
+    def search_series(self, q):
+        """
+            Using `self.series` list of series names, fetch any series
+            containing 'q' in the name
 
-    try:
-        vid_format, vid_quality = api.get_stream_formats(episode).get(quality)
-        stream = api.get_media_stream(episode, vid_format, vid_quality)
-        return stream
-    except:
-        error(u"Something has gone wrong getting media stream...")
-        return None
+            Our search for `q` is case-insensitive
+            API search uses Crunchyroll's casing
+        """
+        matching_names = filter(lambda name: q.lower() in name.lower(), self.series)
+        matching_series = list(self.api.search_anime_series(name)[0] for name in matching_names)
+        return matching_series
 
-def get_res(stream):
-    info = stream.stream_info
-    width = info.findfirst('.//metadata/width').text
-    height = info.findfirst('.//metadata/height').text
-    return (int(width), int(height))
+    def get_random_series(self, count=1):
+        random_series = [self.api.search_anime_series(name)[0] for name in sample(self.series, count)]
+        return random_series
 
-def get_random_free_episode_urls(count=1):
-    urls = []
-    an_ep = {"url": "no url"}
-    while len(urls) < count:
+    def free_eps(self, series):
         try:
-            an_ep = choice( free_eps( get_random_series()[0] ) )
-            if len(api.get_subtitle_stubs(an_ep)) > 0:
-                urls.append(an_ep.url)
+            return [ep for ep in self.api.list_media(series) if ep.free_available]
         except:
-            error("Skipping {} because: hard-coded subs? no free episodes?".format(an_ep.url))
-    return urls
+            self.error(u"Something has gone wrong finding free episodes...")
+            return None
+
+    def get_stream(self, episode, quality="720p"):
+        resolution = int( re.sub(r"\D", "", quality) )
+
+        if resolution > 480 and self.api.is_premium("anime") is False:
+            error(u"Not authorized for premium Anime. Reducing to 480p")
+            quality = "480p"
+            resolution = 480
+
+        try:
+            vid_format, vid_quality = self.api.get_stream_formats(episode).get(quality)
+            stream = self.api.get_media_stream(episode, vid_format, vid_quality)
+            return stream
+        except:
+            self.error(u"Something has gone wrong getting media stream...")
+            return None
+
+    def get_res(self, stream):
+        info = stream.stream_info
+        width = info.findfirst('.//metadata/width').text
+        height = info.findfirst('.//metadata/height').text
+        return (int(width), int(height))
+
+    def get_random_free_episode_urls(self, count=1):
+        urls = []
+        an_ep = None
+        while len(urls) < count:
+            try:
+                an_ep = choice( self.free_eps( self.get_random_series()[0] ) )
+                self.debug(u"working with {}, checking hardsubs...".format(an_ep.url))
+                if len(self.api.get_subtitle_stubs(an_ep)) > 0:
+                    self.debug(u"appending {}".format(an_ep.url))
+                    urls.append(an_ep.url)
+            except StandardError as e:
+                self.error("Skipping {} because: hard-coded subs? no free episodes?".format(an_ep.url))
+                self.error(e)
+        return urls
