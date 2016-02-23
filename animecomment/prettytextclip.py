@@ -2,6 +2,8 @@ from .utility import *
 import tempfile
 import subprocess as sp
 
+from imageio import imread
+
 from moviepy.tools import subprocess_call
 from moviepy.config import get_setting
 from moviepy.video.VideoClip import *
@@ -103,7 +105,7 @@ class PrettyTextClip(TextClip):
         if print_cmd:
             print( " ".join(cmd) )
         try:
-            subprocess_call(cmd, verbose=verbose)
+            subprocess_call(cmd, verbose=True)
         except (IOError,OSError) as err:
             error = ("MoviePy Error: creation of %s failed because "
               "of the following error:\n\n%s.\n\n."%(filename, str(err))
