@@ -33,13 +33,13 @@ class TxtParser(Parser):
     split_re = re.compile("([\.\?\!]+[\"\']?) +")
     junk_re = re.compile("^\s+|\s+$|^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\>\}]| \>\>")
 
-    def __init__(self, path=None, split_re=None, junk_re=None, filenames=None):
+    def __init__(self, paths=None, split_re=None, junk_re=None, filenames=None):
         self.split_re = split_re or TxtParser.split_re
         self.junk_re = junk_re or TxtParser.junk_re
         if filenames:
             self.filenames = force_iterable(filenames)
         else:
-            self.filenames = files_from_path(path, "txt")
+            self.filenames = files_from_path(paths, "txt")
 
     def load(self, sub_file):
         with open(sub_file) as f:
@@ -96,7 +96,7 @@ class AssParser(Parser):
         if filenames:
             self.filenames = force_iterable(filenames)
         else:
-            self.filenames = files_from_path(path, "ass")
+            self.filenames = files_from_path(paths, "ass")
 
 
     def load(self, sub_file):
@@ -155,13 +155,13 @@ class SrtParser(Parser):
     split_re = re.compile("([\.\?\!]+[\"\']?) +")
     junk_re = re.compile("^\s+|\s+$|^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(].+?[\]\)\>]| \>\>")
 
-    def __init__(self, path=None, split_re=None, junk_re=None, filenames=None):
+    def __init__(self, paths=None, split_re=None, junk_re=None, filenames=None):
         self.split_re = split_re or SrtParser.split_re
         self.junk_re = junk_re or SrtParser.junk_re
         if filenames:
             self.filenames = force_iterable(filenames)
         else:
-            self.filenames = files_from_path(path, "srt")
+            self.filenames = files_from_path(paths, "srt")
 
     def load(self, sub_file):
         try:
