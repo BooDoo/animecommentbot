@@ -1,6 +1,9 @@
 from .utility import *
+from functools import partial
 
 from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from .prettytextclip import PrettyTextClip
 
 font_name= ENV.get('SUBTITLE_FONT', u"Open-Sans-Semibold")
@@ -26,14 +29,20 @@ class Subtitler(object):
 
     def sub_generator(self, txt, **kwargs):
         txt = clean_line(txt)
-        kwargs.update(self.settings)
-        return PrettyTextClip(txt, **kwargs)
+        settings = setdefaults({}, **default_opts)
+        settings.update(kwargs)
+        return PrettyTextClip(txt, **settings)
 
-    def make_sub_opts(self, vidclip):
+    def compose_subs(self, vid_clip, txt, pos="top"):
+        sub_opts = self.make_sub_opts(vid_clip)
+        txt_clip = self.sub_generator(txt, **sub_opts)
+        return CompositeVideoClip([vid_clip, txt_clip.set_pos(pos)])
+
+    def make_sub_opts(self, vid_clip):
         """Tailor options in the sub_generator for video clip"""
         # decoration_factor is 1 for 480p, 2 for 720p, 3 for 1080p
         # this is used for IM stroke_width and x/y offsets in shadow.
-        w, h = vidclip.size
+        w, h = vid_clip.size
         decoration_factor = int(round(h / 480.0))
 
         # render_w/h leaves a margin below rendered subtitles
