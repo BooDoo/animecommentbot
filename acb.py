@@ -67,7 +67,7 @@ def main():
     terseness = args.terseness
     if terseness and verbosity:
         verbosity = 0
-    log_level = logging.WARNING - (verbosity*10) + (terseness*10)
+    log_level = max(1, logging.WARNING - (verbosity*10) + (terseness*10))
     logger.warning(u"Setting console_lvl to {}".format(log_level))
     Logger(console_lvl=log_level)
 

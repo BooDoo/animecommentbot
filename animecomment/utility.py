@@ -1,11 +1,12 @@
 from __future__ import unicode_literals, print_function
 from random import choice, sample
+from functools import partial
 import os, re, logging
 from os import environ as ENV
 import glob
 from slurfilter import blacklisted
 
-def Logger(name=None, lvl=logging.DEBUG, console_lvl=None, fmt_string=None):
+def Logger(name=None, lvl=1, console_lvl=None, fmt_string=None):
     if name:
         logger = logging.getLogger(u"acb.{}".format(name))
     else:
@@ -106,7 +107,7 @@ def files_from_path(inputpaths, usable_extensions):
                 for ext in usable_extensions:
                     files = insensitive_glob(os.path.join(root, '*.{}'.format(ext)))
                     if len(files) > 0:
-                        logger.debug("Found {} files: {}".format(len(files), [os.path.basename(f) for f in files]))
+                        logger.trace("Found {} files: {}".format(len(files), [os.path.basename(f) for f in files]))
                     found_files.extend(files)
         else:
             logger.error(u"Given file instead of directory; hope that's what you meant to do!")
@@ -133,8 +134,11 @@ def get_tweetable_line(src=None, *args, **kwargs):
         logger.error(u"No suitable line found...")
 
 """ establish a basic module-level logger """
+logging.addLevelName(1,u"TRACE")
 logger = Logger(console_lvl=logging.DEBUG)
+logger.trace = partial(logger.log,1)
 info = logger.info
 debug = logger.debug
 error = logger.error
+trace = logger.trace
 logger.debug(u"Established module-level logger")
