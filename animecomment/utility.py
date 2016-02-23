@@ -1,11 +1,38 @@
 from __future__ import unicode_literals, print_function
 from random import choice, sample
-import os, re
+import os, re, logging
 from os import environ as ENV
 import glob
 from slurfilter import blacklisted
 
-verbose=True
+def Logger(name=None, lvl=logging.DEBUG, console_lvl=None, fmt_string=None):
+    if name:
+        logger = logging.getLogger(u"acb.{}".format(name))
+    else:
+        logger = logging.getLogger(u"acb")
+
+    logger.setLevel(lvl)
+
+    fmt_string = fmt_string or u'%(name)-14s - %(levelname)-8s - %(message)s'
+    formatter = logging.Formatter(fmt_string)
+
+    if name is None:
+        if len(logger.handlers):
+            ch = [h for h in logger.handlers if type(h) is logging.StreamHandler][0]
+        else:
+            ch = logging.StreamHandler()
+
+        if fmt_string:
+            ch.setFormatter(formatter)
+        if console_lvl:
+            ch.setLevel(console_lvl)
+
+    # only add handler if we don't already have one
+        if not len(logger.handlers):
+            print(u"Adding a handler for {} logger...".format(name))
+            logger.addHandler(ch)
+
+    return logger
 
 """ Take dict of keys/values, assign as defaults to given dict and return it """
 def setdefaults(d, **opts):
@@ -16,22 +43,6 @@ def setdefaults(d, **opts):
 
     else:
         return None
-
-class Logger(object):
-    def __init__(self, verbose=False, output=None):
-        self.verbose = verbose
-        self.output = output or print
-
-    """ Debug/Log/Error for outputting... """
-    def debug(self, string):
-        if self.verbose:
-            self.output(u"[.] {}".format(string))
-
-    def log(self, string):
-        self.output(u"[+] {}".format(string))
-
-    def error(self, string):
-        self.output(u"[!] {}".format(string))
 
 """ Change extension of given filename """
 def change_extension(inputfile, new_ext='srt'):
@@ -83,24 +94,22 @@ def files_from_path(inputpaths, usable_extensions):
     inputpaths = force_iterable(inputpaths)
     usable_extensions = force_iterable(usable_extensions)
 
-    """ work with or without Logger loaded """
-
     inputpaths = map(os.path.expanduser, inputpaths)
     found_files = []
     for inputpath in inputpaths:
         isdir = os.path.isdir(inputpath)
-        print("FILES_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
+        logger.debug("FILES_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
         if isdir:
             """Check for valid formats within directory"""
             for root, dirs, files in os.walk(inputpath):
-                print(u"Checking {}".format(root))
+                logger.debug(u"Checking {}".format(root))
                 for ext in usable_extensions:
                     files = insensitive_glob(os.path.join(root, '*.{}'.format(ext)))
                     if len(files) > 0:
-                        print("Found {} files: {}".format(len(files), [os.path.basename(f) for f in files]))
+                        logger.debug("Found {} files: {}".format(len(files), [os.path.basename(f) for f in files]))
                     found_files.extend(files)
         else:
-            error(u"Given file instead of directory; hope that's what you meant to do!")
+            logger.error(u"Given file instead of directory; hope that's what you meant to do!")
             found_files.append(inputpath)
     return uniqify(found_files)
 
@@ -121,4 +130,11 @@ def get_tweetable_line(src=None, *args, **kwargs):
     try:
         return choice(get_tweetable_lines(src, *args, **kwargs))
     except IndexError:
-        error(u"No suitable line found...")
+        logger.error(u"No suitable line found...")
+
+""" establish a basic module-level logger """
+logger = Logger(console_lvl=logging.DEBUG)
+info = logger.info
+debug = logger.debug
+error = logger.error
+logger.debug(u"Established module-level logger")

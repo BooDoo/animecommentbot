@@ -22,9 +22,9 @@ class Crunchyroll(object):
         cls.have_api = True
         return cls.api
 
-    def __init__(self, logger=None, verbose=False, force_fetch=False, force_api=False):
-        self.logger = logger or Logger(verbose=verbose)
-        self.debug, self.log, self.error = (self.logger.debug, self.logger.log, self.logger.error)
+    def __init__(self, logger=None, log_level=logging.WARNING, force_fetch=False, force_api=False):
+        self.logger = Logger(u'crunchyroll')
+        self.debug, self.info, self.error = (self.logger.debug, self.logger.info, self.logger.error)
 
         if force_api is True or Crunchyroll.have_api is False:
             self.debug("initiating API object...")
@@ -64,7 +64,7 @@ class Crunchyroll(object):
         resolution = int( re.sub(r"\D", "", quality) )
 
         if resolution > 480 and self.api.is_premium("anime") is False:
-            error(u"Not authorized for premium Anime. Reducing to 480p")
+            self.error(u"Not authorized for premium Anime. Reducing to 480p")
             quality = "480p"
             resolution = 480
 

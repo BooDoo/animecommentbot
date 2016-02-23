@@ -23,11 +23,8 @@ from prettytextclip import PrettyTextClip
 from subtitler import Subtitler
 
 ### GLOBALS
-verbose=True
+global queue_separator
+global logger
 queue_separator='====='
 
-""" Establish a simple logger, using print() """
-logger = utility.Logger()
-log = logger.log
-debug = logger.debug
-error = logger.error
+logger = utility.logger

@@ -1,6 +1,8 @@
 import pysrt as srt
 from .utility import *
 
+srtLogger = Logger('srt')
+
 ## REGULAR EXPRESIONS:
 # Throw out junk strings (sound effects, speaker labels...)
 junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\>\}]| \>\>")
@@ -14,7 +16,7 @@ def parse_srt(sub_file=None):
     # random sourcing now handled in the Corpus class:
     # sub_file = sub_file or get_random_srt()
 
-    debug(u"Using {} as SRT".format(sub_file))
+    srtLogger.debug(u"Using {} as SRT".format(sub_file))
 
     try:
         subs = srt.open(sub_file)
