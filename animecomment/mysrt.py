@@ -12,6 +12,19 @@ junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\
 #       Avoid truncating within a quotation.
 split_re = re.compile("([\.\?\!]+\"?) +")
 
+### For monkey-patching onto SubRipItem
+def get_duration(self):
+    try:
+        return self.end - self.start
+    except (AttributeError, TypeError):
+        return NotImplemented
+
+def get_seconds(self):
+    return self.get_duration().ordinal / 1000.
+
+srt.SubRipItem.get_duration = get_duration
+srt.SubRipItem.get_seconds = get_seconds
+
 def parse_srt(sub_file=None):
     # random sourcing now handled in the Corpus class:
     # sub_file = sub_file or get_random_srt()
