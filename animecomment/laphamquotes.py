@@ -29,7 +29,7 @@ def extract_text(doc, selector=None):
 
 def get_quotes(count=4):
     texts = extract_text( parse_html( fetch_page( get_page_num() ) ) )
-    if count > len(texts)
+    if count > len(texts):
         count = len(texts)
         warn(u"Only found {} quotes. Reducing count.".format(len(texts)) )
     return sample(texts, count)
