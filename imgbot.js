@@ -78,6 +78,11 @@ function tweetAPic(picPath, status) {
   twitter.post("media/upload", { media_data: picB64 }, tweetMe);
 }
 
+function tweetAVid(vidPath, status) {
+  var tweetMe = _.partialRight(afterUpload, status);
+  twitter.postMediaChunked({file_path: vidPath}, tweetMe);
+}
+
 // After uploading the media, add status text and tweet it out:
 function afterUpload(err, data, res, status) {
   if (!err) {
@@ -90,7 +95,7 @@ function afterUpload(err, data, res, status) {
     console.error(err);
   }
 }
- 
+
 // Success/failure notification for tweet attempt
 function afterTweet(err, data) {
   if (!err) {
@@ -108,7 +113,11 @@ function afterTweet(err, data) {
   console.log("Working with:\n\t=>",
               thisItem[0], "\n\t===>",
               thisItem[1]);
-  tweetAPic(thisItem[0], thisItem[1]);      // Tweet the image along with associated caption
+  if (path.extname(thisItem[0]) === ".mp4") {
+    tweetAPic(thisItem[0], thisItem[1]);      // Tweet the image along with associated caption
+  } else {
+    tweetAVid(thisItem[0], thisItem[1]);      // Tweet the video along with associated caption
+  }
   fs.unlinkSync(thisItem[0]);               // Delete the tweeted image
   writeQueue(queueItems);                   // Re-write queue.txt with this line removed
 })();
