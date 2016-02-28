@@ -164,12 +164,15 @@ class SrtParser(Parser):
             self.filenames = files_from_path(paths, "srt")
 
     def load(self, sub_file):
-        try:
-            subs = srt.open(sub_file)
-        except:
-            subs = srt.open(sub_file, "latin1")
+        if type(sub_file) is srt.SubRipFile:
+            return sub_file
+        else:
+            try:
+                subs = srt.open(sub_file)
+            except:
+                subs = srt.open(sub_file, "latin1")
 
-        return subs
+            return subs
 
     def flatten(self, subs):
         flat_subs = subs.text.replace("\n", " ")
