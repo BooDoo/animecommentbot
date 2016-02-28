@@ -41,7 +41,8 @@ class TxtParser(Parser):
         else:
             self.filenames = files_from_path(paths, "txt")
 
-    def load(self, sub_file):
+    def load(self, sub_file=None):
+        sub_file = sub_file or choice(self.filenames)
         with open(sub_file) as f:
             subs = f.readlines()
 
@@ -99,7 +100,8 @@ class AssParser(Parser):
             self.filenames = files_from_path(paths, "ass")
 
 
-    def load(self, sub_file):
+    def load(self, sub_file=None):
+        sub_file = sub_file or choice(self.filenames)
         with open(sub_file) as f:
             subs = ass.parse(f)
 
@@ -163,9 +165,8 @@ class SrtParser(Parser):
         else:
             self.filenames = files_from_path(paths, "srt")
 
-    def load(self, sub_file):
-        if type(sub_file) is srt.SubRipFile:
-            return sub_file
+    def load(self, sub_file=None):
+        sub_file = sub_file or choice(self.filenames)
         else:
             try:
                 subs = srt.open(sub_file)
