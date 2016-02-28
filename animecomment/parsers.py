@@ -59,7 +59,7 @@ class TxtParser(Parser):
         junk_re = junk_re or self.junk_re
         subs = force_iterable(subs)
 
-        clean_subs = [junk_re.sub("", sub) for sub in subs]
+        clean_subs = [junk_re.sub(" ", sub) for sub in subs]
 
         return clean_subs if len(clean_subs) > 1 else clean_subs[0]
 
@@ -120,9 +120,9 @@ class AssParser(Parser):
         subs = force_iterable(subs)
 
         try:
-            clean_subs = [junk_re.sub("", sub.text).replace("\N", "\n") for sub in subs]
+            clean_subs = [junk_re.sub(" ", sub.text).replace("\N", "\n") for sub in subs]
         except AttributeError:
-            clean_subs = [junk_re.sub("", sub) for sub in subs]
+            clean_subs = [junk_re.sub(" ", sub) for sub in subs]
 
         ## "\N replacement" FOR ASS TYPE:
         ## TODO: move to ass.document.Document.text?
@@ -180,9 +180,9 @@ class SrtParser(Parser):
         subs = force_iterable(subs)
 
         try:
-            clean_subs = [junk_re.sub("", sub.text) for sub in subs]
+            clean_subs = [junk_re.sub(" ", sub.text) for sub in subs]
         except AttributeError:
-            clean_subs = [junk_re.sub("", sub) for sub in subs]
+            clean_subs = [junk_re.sub(" ", sub) for sub in subs]
 
         return clean_subs if len(clean_subs) > 1 else clean_subs[0]
 
