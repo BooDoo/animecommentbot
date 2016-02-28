@@ -1,18 +1,10 @@
 import pysrt as srt
 from .utility import *
+from .parsers import SrtParser
 
 srtLogger = Logger('srt')
 
-## REGULAR EXPRESIONS:
-# Throw out junk strings (sound effects, speaker labels...)
-junk_re = re.compile("^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\>\}]| \>\>")
-
-# Split on meaningful punctuation followed by a space
-# TODO: Avoid false splits like 'Dr.' and 'Mrs.'
-#       Avoid truncating within a quotation.
-split_re = re.compile("([\.\?\!]+\"?) +")
-
-### For monkey-patching onto SubRipItem
+### For monkey-patching onto SubRipItem:
 def get_duration(self):
     try:
         return self.end - self.start
@@ -25,27 +17,20 @@ def get_seconds(self):
 srt.SubRipItem.get_duration = get_duration
 srt.SubRipItem.get_seconds = get_seconds
 
-def parse_srt(sub_file=None):
-    # random sourcing now handled in the Corpus class:
-    # sub_file = sub_file or get_random_srt()
 
+# for monkey-patching into srt module itself:
+def parse_srt(sub_file=None, **kwargs):
     srtLogger.debug(u"Using {} as SRT".format(sub_file))
-
-    try:
-        subs = srt.open(sub_file)
-    except:
-        subs = srt.open(sub_file, "latin1")
-
-    flat_subs = subs.text.replace("\n", " ")
-    clean_subs = junk_re.sub(" ", flat_subs)
-    piece_iter = iter(split_re.split(clean_subs))
-    split_subs = [l+next(piece_iter, '').strip() for l in piece_iter]
-
-    return split_subs
+    parser = SrtParser(filenames=sub_file)
+    return parser.parse(sub_file, **kwargs)
 
 def print_srt(sub_file=None):
     for i,l in enumerate(parse_srt(sub_file)):
         print(i,l)
 
-srt.parse_srt = parse_srt
-srt.print_srt = print_srt
+def item_per_sentence(sub_file=None):
+    pass
+
+srt.parse = parse_srt
+srt.print_lines = print_srt
+srt.item_per_sentence = item_per_sentence
