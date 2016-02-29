@@ -1,6 +1,7 @@
 from .utility import *
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
+from mysrt import srt
 
 class Crunchyroll(object):
     all_series = None
@@ -56,8 +57,8 @@ class Crunchyroll(object):
     def free_eps(self, series):
         try:
             return [ep for ep in self.api.list_media(series) if ep.free_available]
-        except:
-            self.error(u"Something has gone wrong finding free episodes...")
+        except Exception as e:
+            self.error(u"Something has gone wrong finding free episodes...\n{}".format(e.message))
             return None
 
     def get_stream(self, episode, quality="720p"):
@@ -75,6 +76,14 @@ class Crunchyroll(object):
         except:
             self.error(u"Something has gone wrong getting media stream...")
             return None
+
+    def get_srt_string(self, episode):
+        stream = self.get_stream(episode)
+        return stream.default_subtitles.decrypt().get_srt_formatted().decode('utf8')
+
+    def get_srt_items(self, episode):
+        srt_string = self.get_srt_string(episode)
+        return srt.from_string(srt_string)
 
     def get_res(self, stream):
         info = stream.stream_info
