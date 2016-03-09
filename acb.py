@@ -30,7 +30,7 @@ def dl_and_comment(ep_count=3,frame_count=5,noprogress=True):
 
 def make_comment(vid_file, out_path="output", frame_count=5):
     cliLogger.info(u"Using {} as source...".format(os.path.basename(vid_file)))
-    label = os.path.basename(vid_file).split(".")[0].replace(" ","").lower()
+    label = "".join(os.path.basename(vid_file).split(".")[:-1]).replace(" ","").lower()
     vid_clip = VideoFileClip(vid_file)
     ### TODO: Grab frames sequentially with randomish jump between each
     earliest = int(vid_clip.duration * 0.1)

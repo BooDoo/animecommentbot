@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function
 from random import choice, sample
 from functools import partial
+from itertools import chain
 import os, re, logging
 from os import environ as ENV
 import glob
@@ -87,6 +88,13 @@ def force_iterable(val):
         return val
     else:
         return [val]
+
+def flatten(val):
+    if hasattr(val, '__iter__'):
+        return list(chain.from_iterable(val))
+    else:
+        logger.debug(u"Can't flatten a {}; returning untouched".format( type(val) ) )
+        return val
 
 """ Walk directory tree to find files of a type """
 def files_from_path(inputpaths, usable_extensions):
