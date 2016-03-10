@@ -54,7 +54,8 @@ class Crunchyroll(object):
         random_series = [self.api.search_anime_series(name)[0] for name in sample(self.series, count)]
         return random_series
 
-    def free_eps(self, series):
+    def free_eps(self, series=None):
+        series = series or get_random_series()[0]
         try:
             return [ep for ep in self.api.list_media(series) if ep.free_available]
         except Exception as e:
@@ -91,12 +92,13 @@ class Crunchyroll(object):
         height = info.findfirst('.//metadata/height').text
         return (int(width), int(height))
 
-    def get_random_free_episode_urls(self, count=1):
+    def get_random_free_episode_urls(self, count=1, series=[None]):
+        series = force_iterable(series)
         urls = []
         an_ep = None
         while len(urls) < count:
             try:
-                an_ep = choice( self.free_eps( self.get_random_series()[0] ) )
+                an_ep = choice( self.free_eps(choice(series)) )
                 self.debug(u"working with {}, checking hardsubs...".format(an_ep.url))
                 if len(self.api.get_subtitle_stubs(an_ep)) > 0:
                     self.debug(u"appending {}".format(an_ep.url))

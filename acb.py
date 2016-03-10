@@ -21,9 +21,14 @@ cliLogger = Logger(u"cli", logging.DEBUG)
 def get_a_line():
     return get_tweetable_line(Corpus().parse(), min_length=30, max_length=90)
 
-def dl_and_comment(ep_count=3,frame_count=5,noprogress=True):
+def dl_and_comment(ep_count=3,frame_count=5,series=None,noprogress=True):
     cr = CR()
-    urls = cr.get_random_free_episode_urls(ep_count)
+    # TODO: No, this is gross.
+    debug(u"Before parsing series in dl_and_comment: {}".format(series))
+    if series is not None:
+        series = flatten([cr.search_series(q) for q in force_iterable(series)])
+    debug(u"After parsing series in dl_and_comment: {}".format(series))
+    urls = cr.get_random_free_episode_urls(ep_count,series)
     post_dl = partial(make_comment, frame_count=frame_count, out_path="output")
     yt = YT(post_dl, noprogress=noprogress)
     yt.download(urls)
@@ -55,16 +60,19 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description=u"Download videos, randomly select frames, put text over them.")
-    parser.add_argument('--episodes', '--eps', '-e', dest='ep_count', type=int, default=5)
-    parser.add_argument('--frames', '-f', dest='frame_count', type=int, default=5)
+    parser.add_argument('--ep_count', '--eps', '-e', dest='ep_count', type=int, default=5)
+    parser.add_argument('--frame_count', '-f', dest='frame_count', type=int, default=5)
     parser.add_argument('--verboser', '-v', dest='verbosity', action='count', default=0)
     parser.add_argument('--terser', '-q', dest='terseness', action='count', default=0)
     parser.add_argument('--progress', '-p', dest='progress', action='store_true', default=False)
+    parser.add_argument('--series', '-s', dest='series', default=None) #comma or semi-colon separated
 
     args = parser.parse_args()
     ep_count = args.ep_count
     frame_count = args.frame_count
-
+    series = args.series
+    if series is not None:
+        series = re.split(r" *[,;] *", series)
     # make verbosity and terseness mutex
     # TODO: enforce this in argparser
     # TODO: actually use this calculated log_level elsewhere...
@@ -82,7 +90,7 @@ def main():
         noprogress = True
 
     cliLogger.debug(u"If you see this: we're verbosely logging!")
-    dl_and_comment(ep_count=ep_count, frame_count=frame_count, noprogress=noprogress)
+    dl_and_comment(ep_count=ep_count, frame_count=frame_count, series=series, noprogress=noprogress)
     ### cliLogger.info(u"Would run dl_and_comment with (ep_count={})".format(ep_count))
     ### cliLogger.info(u"and get_a_line() returns: {}".format( get_a_line() ) )
 
