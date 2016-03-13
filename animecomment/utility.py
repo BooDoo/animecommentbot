@@ -56,7 +56,7 @@ def change_extension(inputfile, new_ext='srt'):
 """ Adjustment of corpus line to clean up for composing """
 # TODO: Redundant with .mysrt.junk_re?
 def clean_line(string):
-    pattern = r'[<\{].+?[>\}]'
+    pattern = r'^\s+|\s+$|^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[<\{].+?[>\}]|[\<\[\(\{].+?[\]\)\>\}]|\>'
 
     return re.sub(pattern, '', string)
 

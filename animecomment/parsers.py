@@ -2,6 +2,9 @@ from .utility import *
 from .mysrt import srt
 from .myass import ass
 
+# TODO: junk_re with ^ and $ are useless is used with flatten!
+
+
 class Parser(object):
     """ uses:
         split_re, junk_re,
@@ -139,7 +142,7 @@ class AssParser(Parser):
         split_subs = [line+next(piece_iter, '').strip() for line in piece_iter]
         return split_subs
 
-    def parse(self, sub_file, subs, flatten, clean, split):
+    def parse(self, sub_file=None, subs=None, flatten=True, clean=True, split=True):
         if subs is None:
             sub_file = sub_file or choice(self.filenames)
             subs = self.load(sub_file)

@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 quotes_endpoint = "http://www.laphamsquarterly.org/archive/quotes&page={}"
 quote_selector = "div.module-content > p" ### more specifically, we could add :nth-child(2)
 
-
 def get_page_num(min_page=0, max_page=81):
     return choice(range(min_page, max_page))
 
