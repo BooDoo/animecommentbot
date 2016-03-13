@@ -25,7 +25,7 @@ def extract_text(doc, selector=None):
     texts = [target.text.strip() for target in targets]
     return texts
 
-def get_quotes(count=4):
+def get_quotes(count=6):
     texts = extract_text( parse_html( fetch_page( get_page_num() ) ) )
     if count > len(texts):
         count = len(texts)

@@ -123,7 +123,7 @@ def files_from_path(inputpaths, usable_extensions):
 
 def get_tweetable_lines(src=None,min_length=1,max_length=127,count=None,use_filter=True):
     length_range = range(min_length, max_length+1)
-
+    src = force_iterable(src)
     candidates = [l for l in src if len(l) in length_range]
 
     if use_filter:
@@ -139,6 +139,7 @@ def get_tweetable_line(src=None, *args, **kwargs):
         return choice(get_tweetable_lines(src, *args, **kwargs))
     except IndexError:
         logger.error(u"No suitable line found...")
+        logger.debug(u"Looked at: {}".format(src))
 
 """ establish a basic module-level logger """
 logging.addLevelName(1,u"TRACE")
