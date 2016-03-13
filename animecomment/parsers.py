@@ -92,7 +92,7 @@ class TxtParser(Parser):
 
 class AssParser(Parser):
     split_re = re.compile("([\.\?\!]+[\"\']?) +")
-    junk_re = re.compile("^\s+|\s+$|^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[\<\[\(\{].+?[\]\)\>\}]|\>")
+    junk_re = re.compile("^\s+|\s+$|^\d+\. |^\s*[\-\>\#]+| ?[A-Z]+: | \-+ |[<\{].+?[>\}]|[\<\[\(\{].+?[\]\)\>\}]|\>")
 
     def __init__(self, paths=None, split_re=None, junk_re=None, filenames=None):
         self.split_re = split_re or AssParser.split_re
@@ -115,9 +115,8 @@ class AssParser(Parser):
             return None
 
     def flatten(self, subs):
-        ## "\N replacement" FOR ASS TYPE:
         ## TODO: move to ass.document.Document.text?
-        flat_subs = subs.text.replace("\N", "\n").replace("\n", " ")
+        flat_subs = subs.text.replace(r"\N", r"\n").replace(r"\n", "\n").replace("\n", " ")
         return flat_subs
 
     def clean(self, subs, junk_re=None):
@@ -125,13 +124,12 @@ class AssParser(Parser):
         subs = force_iterable(subs)
 
         try:
-            clean_subs = [junk_re.sub(" ", sub.text).replace("\N", "\n") for sub in subs]
+            clean_subs = [junk_re.sub(" ", sub.text).replace(r"\N", r"\n").replace(r"\n", "\n") for sub in subs]
         except AttributeError:
             clean_subs = [junk_re.sub(" ", sub) for sub in subs]
 
-        ## "\N replacement" FOR ASS TYPE:
-        ## TODO: move to ass.document.Document.text?
-        clean_subs = [sub.replace("\N", "\n") for sub in clean_subs]
+        ## TODO: move r"\N" replacement to ass.document.Document.text?
+        clean_subs = [sub.replace(r"\N", r"\n").replace(r"\n", "\n") for sub in clean_subs]
 
         return clean_subs if len(clean_subs) > 1 else clean_subs[0]
 
