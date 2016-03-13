@@ -1,5 +1,5 @@
 import requests
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 
 ny_endpoint = "http://www.newyorker.com/cartoons/random/randomAPI1"
 html_parser = HTMLParser()

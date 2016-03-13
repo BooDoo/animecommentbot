@@ -1,4 +1,3 @@
-from __future__ import unicode_literals, print_function
 from random import choice, sample
 from .utility import *
 

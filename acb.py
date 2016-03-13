@@ -1,7 +1,4 @@
-#!/usr/bin/env python2
-
-from __future__ import unicode_literals, print_function
-
+#!/usr/bin/env python3
 import os, re, sys, animecomment
 from animecomment import queue_separator
 from animecomment.utility import *
@@ -54,7 +51,7 @@ def make_comment(vid_file, out_path="output", frame_count=5):
             cliLogger.info(u"\tWriting {0} of {1:03d}...".format(n, frame_count) )
             image_path = u"{0}/{1}_{2:03d}.png".format(out_path, label, n)
             imwrite(image_path, frame)
-            queue.write(u"{0}{1}{2}\n".format(image_path, queue_separator, txt).encode('utf8', 'replace') )
+            queue.write(u"{0}{1}{2}\n".format(image_path, queue_separator, txt))
 
 def main():
     import argparse

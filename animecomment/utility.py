@@ -1,11 +1,10 @@
-from __future__ import unicode_literals, print_function
 from random import choice, sample
 from functools import partial
 from itertools import chain
 import os, re, logging
 from os import environ as ENV
 import glob
-from slurfilter import blacklisted
+from .slurfilter import blacklisted
 
 def Logger(name=None, lvl=1, console_lvl=None, fmt_string=None):
     if name:
@@ -38,8 +37,8 @@ def Logger(name=None, lvl=1, console_lvl=None, fmt_string=None):
 
 """ Take dict of keys/values, assign as defaults to given dict and return it """
 def setdefaults(d, **opts):
-    if hasattr(d, "iteritems"):
-        for (key, value) in opts.iteritems():
+    if hasattr(d, "items"):
+        for (key, value) in opts.items():
             d.setdefault(key, value)
         return d
 
@@ -84,13 +83,13 @@ def uniqify(seq, idfun=None):
    return result
 
 def force_iterable(val):
-    if hasattr(val, '__iter__'):
+    if hasattr(val, '__iter__') and not isinstance(val, str):
         return val
     else:
         return [val]
 
 def flatten(val):
-    if hasattr(val, '__iter__'):
+    if hasattr(val, '__iter__') and not isinstance(val, str):
         return list(chain.from_iterable(val))
     else:
         logger.debug(u"Can't flatten a {}; returning untouched".format( type(val) ) )

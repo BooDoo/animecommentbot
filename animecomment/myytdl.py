@@ -34,7 +34,7 @@ class YTDownloader(object):
         if d['status'] == 'finished':
             filename = d["filename"]
             self.info(u"Done downloading, wrote to {}".format(filename))
-            self.debug(u"calling {} with {} for {}".format(self.callback.func.func_name, self.callback.keywords, filename))
+            self.debug(u"calling {} with {} for {}".format(self.callback.func.__name__, self.callback.keywords, filename))
             self.callback(filename)
             if self.keepfile is False:
                 self.info(u"Deleting {}...".format(filename))

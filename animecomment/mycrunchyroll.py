@@ -1,7 +1,7 @@
 from .utility import *
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
-from mysrt import srt
+from .mysrt import srt
 
 class Crunchyroll(object):
     all_series = None
@@ -80,7 +80,7 @@ class Crunchyroll(object):
 
     def get_srt_string(self, episode):
         stream = self.get_stream(episode)
-        return stream.default_subtitles.decrypt().get_srt_formatted().decode('utf8')
+        return stream.default_subtitles.decrypt().get_srt_formatted()
 
     def get_srt_items(self, episode):
         srt_string = self.get_srt_string(episode)

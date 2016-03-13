@@ -1,4 +1,3 @@
-from __future__ import unicode_literals, print_function
 # import os, sys, glob, json, re
 # import requests, gzip, io, csv
 # from random import choice, sample
@@ -15,12 +14,12 @@ from __future__ import unicode_literals, print_function
 # import crunchyroll
 # from crunchyroll.apis.meta import MetaApi
 
-import utility
-import mysrt as srt
-import corpus
-import mycrunchyroll as crunchyroll
-from prettytextclip import PrettyTextClip
-from subtitler import Subtitler
+from . import utility
+from . import mysrt as srt
+from . import corpus
+from . import mycrunchyroll as crunchyroll
+from .prettytextclip import PrettyTextClip
+from .subtitler import Subtitler
 
 ### GLOBALS
 global queue_separator
