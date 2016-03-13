@@ -17,6 +17,7 @@ class Corpus(object):
 
     def parse(self, filename=None, **kwargs):
         filename = filename or choice(self.filenames)
+        debug("No path given, using {}".format(filename))
         ext = os.path.splitext(filename)[-1]
         parser = self.parsers.get(ext[1:], self.parsers['fallback'])
         return parser.parse(filename, **kwargs)
