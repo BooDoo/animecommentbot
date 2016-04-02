@@ -60,7 +60,7 @@ def make_comment(vid_file, out_path="output", frame_count=5, caption_gen=None):
             cliLogger.info(u"\tWriting {0} of {1:03d}...".format(n, frame_count) )
             image_path = u"{0}/{1}_{2:03d}.png".format(out_path, label, n)
             imwrite(image_path, frame)
-            queue.write(u"{0}{1}{2}\n".format(image_path, queue_separator, txt))
+            queue.write(u"{0}{1}{2}{3}{4}\n".format(image_path, queue_separator, txt, queue_separator, label))
 
 def get_text_source(label=None):
     if label is None:
