@@ -24,6 +24,7 @@ class YTDownloader(object):
             'verbose': self.verbose,
             'progress_hooks': [self.finished_hook] + (progress_hooks or []),
             'format': vidformat,
+            'writeinfojson': True,
             'noprogress': noprogress
         }
 
@@ -33,12 +34,15 @@ class YTDownloader(object):
     def finished_hook(self, d):
         if d['status'] == 'finished':
             filename = d["filename"]
+            info_file = change_extension(filename, 'info.json')
             self.info(u"Done downloading, wrote to {}".format(filename))
             self.debug(u"calling {} with {} for {}".format(self.callback.func.__name__, self.callback.keywords, filename))
             self.callback(filename)
             if self.keepfile is False:
                 self.info(u"Deleting {}...".format(filename))
                 os.unlink(filename)
+                self.info(u"Deleting {}...".format(info_file))
+                os.unlink(info_file)
         else:
             pass
 

@@ -1,7 +1,7 @@
 from random import choice, sample
 from functools import partial
 from itertools import chain
-import os, re, logging
+import os, re, logging, json, subprocess
 from os import environ as ENV
 import glob
 from .slurfilter import blacklisted
@@ -140,6 +140,19 @@ def get_tweetable_line(src=None, *args, **kwargs):
     except IndexError:
         logger.error(u"No suitable line found...")
         logger.debug(u"Looked at: {}".format(src))
+
+def get_probe_info(filename, include_streams=False, probe_bin="ffprobe"):
+    probe_cmd = probe_bin
+    probe_cmd += " -v quiet -print_format json -show_format"
+    if include_streams:
+        probe_cmd += " -show_streams"
+    probe_cmd = probe_cmd.split()
+    probe_cmd.append(filename)
+    completed = subprocess.run(probe_cmd, stdout=subprocess.PIPE, universal_newlines=True)
+    return json.loads(completed.stdout)
+
+def get_video_duration(filename):
+    return get_probe_info(filename).get('format').get('duration')
 
 """ establish a basic module-level logger """
 logging.addLevelName(1,u"TRACE")
