@@ -55,7 +55,7 @@ class Crunchyroll(object):
         return random_series
 
     def free_eps(self, series=None):
-        series = series or get_random_series()[0]
+        series = series or self.get_random_series()[0]
         try:
             return [ep for ep in self.api.list_media(series) if ep.free_available]
         except Exception as e:
@@ -103,7 +103,7 @@ class Crunchyroll(object):
                 if len(self.api.get_subtitle_stubs(an_ep)) > 0:
                     self.debug(u"appending {}".format(an_ep.url))
                     urls.append(an_ep.url)
-            except StandardError as e:
+            except Exception as e:
                 self.error("Skipping {} because: hard-coded subs? no free episodes?".format(an_ep.url))
                 self.error(e)
         return urls
