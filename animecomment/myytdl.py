@@ -10,7 +10,7 @@ class YTDownloader(object):
         ydl = YTDownloader(post_dl, logger=logger, noprogress=False, vidformat="720p")
         ydl.download(urls)
     """
-    def __init__(self, callback, logger=None, log_level=logging.WARNING, progress_hooks=None, keepfile=False, noprogress=True, vidformat='480p'):
+    def __init__(self, callback, logger=None, log_level=logging.WARNING, progress_hooks=None, keepfile=False, noprogress=True, vidformat='hls-496'):
         self.logger = Logger(u"ytdl")
         self.keepfile = keepfile
         self.debug, self.info, self.error = (self.logger.debug, self.logger.info, self.logger.error)
@@ -23,8 +23,8 @@ class YTDownloader(object):
             'logger': self.logger,
             'verbose': self.verbose,
             'progress_hooks': [self.finished_hook] + (progress_hooks or []),
-            'format': vidformat,
-            'writeinfojson': True,
+            # 'format': vidformat,
+            # 'writeinfojson': True,
             'noprogress': noprogress
         }
 
@@ -34,15 +34,20 @@ class YTDownloader(object):
     def finished_hook(self, d):
         if d['status'] == 'finished':
             filename = d["filename"]
-            info_file = change_extension(filename, 'info.json')
+            # info_file = change_extension(filename, 'info.json')
             self.info(u"Done downloading, wrote to {}".format(filename))
             self.debug(u"calling {} with {} for {}".format(self.callback.func.__name__, self.callback.keywords, filename))
             self.callback(filename)
             if self.keepfile is False:
                 self.info(u"Deleting {}...".format(filename))
-                os.unlink(filename)
-                self.info(u"Deleting {}...".format(info_file))
-                os.unlink(info_file)
+                # os.unlink(filename)
+                # self.info(u"Deleting {}...".format(info_file))
+                # os.unlink(info_file)
+                try:
+                    os.unlink(filename)
+                except Exception as e:
+                    self.info(e)
+                    pass
         else:
             pass
 

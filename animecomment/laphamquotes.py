@@ -22,7 +22,7 @@ def parse_html(response):
 def extract_text(doc, selector=None):
     selector = selector or quote_selector
     targets = doc.select(selector)
-    texts = [target.text.strip() for target in targets]
+    texts = [target.text.strip().replace('\n', ' ') for target in targets]
     return texts
 
 def get_quotes(count=6):
