@@ -1,9 +1,17 @@
 from .utility import *
 import crunchyroll
 from crunchyroll.apis.meta import MetaApi
+from crunchyroll.models import *
+from crunchyroll.util import return_collection
 from .mysrt import srt
 
 class Crunchyroll(object):
+    TAGS = (
+        'action', 'adventure', 'comedy', 'drama', 'ecchi', 'fantasy',
+        'historical', 'mecha', 'romance', 'science fiction', 'seinen', 'shoujo',
+        'shounen', 'slice of life', 'sports',
+        'mystery', 'supernatural',
+        'staff picks')
     all_series = None
     api = None
     have_fetched = False
@@ -50,6 +58,15 @@ class Crunchyroll(object):
         matching_series = list(self.api.search_anime_series(name)[0] for name in matching_names)
         return matching_series
 
+    @return_collection(Series)
+    def get_by_tag(self, tag, limit=5000, offset=0):
+        tagged_series = self.api._android_api.list_series(
+            media_type='anime',
+            filter="tag:{}".format(tag),
+            limit=limit,
+            offset=offset)
+        return tagged_series
+
     def get_random_series(self, count=1):
         random_series = [self.api.search_anime_series(name)[0] for name in sample(self.series, count)]
         return random_series
@@ -66,8 +83,8 @@ class Crunchyroll(object):
         resolution = int( re.sub(r"\D", "", quality) )
 
         if resolution > 480 and self.api.is_premium("anime") is False:
-            self.error(u"Not authorized for premium Anime. Reducing to 480p")
-            quality = "480p"
+            self.error(u"Not authorized for premium Anime. Reducing to 480p (hls-496)")
+            quality = "hls-496"
             resolution = 480
 
         try:
