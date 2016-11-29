@@ -17,16 +17,20 @@ from animecomment.laphamquotes import get_a_quote, get_quotes
 
 cliLogger = Logger(u"cli", logging.DEBUG)
 
-def get_a_line(source, min_length=30, max_length=90):
+def get_a_line(source, min_length=30, max_length=115):
     return clean_line(get_tweetable_line(source(),min_length=min_length, max_length=max_length))
 
-def dl_and_comment(ep_count=3,frame_count=5,caption_gen=None,series=None,noprogress=True):
+def dl_and_comment(ep_count=3,frame_count=5,caption_gen=None,series=None,tag=None,noprogress=True):
     cr = CR()
     # TODO: No, this is gross.
-    debug(u"Before parsing series in dl_and_comment: {}".format(series))
     if series is not None:
+        debug(u"Before parsing series in dl_and_comment: {}".format(series))
         series = flatten([cr.search_series(q) for q in force_iterable(series)])
-    debug(u"After parsing series in dl_and_comment: {}".format(series))
+        debug(u"After parsing series in dl_and_comment: {}".format(series))
+    if tag is not None:
+        debug(u"Fetching by tag {}...".format(tag))
+        series = cr.get_by_tag(tag)
+        debug( u"Found {0} series matching {1} ".format(len(series), tag) )
     urls = cr.get_random_free_episode_urls(ep_count,series)
     post_dl = partial(make_comment, frame_count=frame_count, caption_gen=caption_gen, out_path="output")
     yt = YT(post_dl, noprogress=noprogress)
@@ -86,16 +90,20 @@ def main():
     parser.add_argument('--terser', '-q', dest='terseness', action='count', default=0)
     parser.add_argument('--progress', '-p', dest='progress', action='store_true', default=False)
     parser.add_argument('--series', '-s', dest='series', default=None) #comma or semi-colon separated
+    parser.add_argument('--tag', '-t', '-g', dest='tag', default=None)
     parser.add_argument('--corpus', '-c', dest='corpus', default=None)
+
 
     args = parser.parse_args()
     ep_count = args.ep_count
     frame_count = args.frame_count
     series = args.series
+    tag = args.tag
     text_source = args.corpus
     if series is not None:
         series = re.split(r" *[,;] *", series)
-
+    if tag is "random":
+        tag = choice(CR.TAGS)
     ## Either pick from nyer/lapham/corpora directory, or specify
     caption_gen = get_text_source(text_source)
 
@@ -115,7 +123,7 @@ def main():
         noprogress = True
 
     cliLogger.debug(u"If you see this: we're verbosely logging!")
-    dl_and_comment(ep_count=ep_count, frame_count=frame_count, series=series, caption_gen=caption_gen, noprogress=noprogress)
+    dl_and_comment(ep_count=ep_count, frame_count=frame_count, series=series, tag=tag, caption_gen=caption_gen, noprogress=noprogress)
     ### cliLogger.info(u"Would run dl_and_comment with (ep_count={})".format(ep_count))
     ### cliLogger.info(u"and get_a_line() returns: {}".format( get_a_line(caption_gen) ) )
 
