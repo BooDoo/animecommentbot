@@ -1,0 +1,9 @@
+ass==0.4.2
+beautifulsoup4==4.5.1
+crunchyroll==1.0.1
+imageio==1.6
+moviepy==0.2.2.11
+pysrt==1.1.1
+Requests==2.12.1
+wordfilter==0.2.5
+youtube_dl==2016.11.27
