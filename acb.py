@@ -27,10 +27,10 @@ def dl_and_comment(ep_count=3,frame_count=5,caption_gen=None,series=None,tag=Non
         debug(u"Before parsing series in dl_and_comment: {}".format(series))
         series = flatten([cr.search_series(q) for q in force_iterable(series)])
         debug(u"After parsing series in dl_and_comment: {}".format(series))
-    if tag is not None:
-        debug(u"Fetching by tag {}...".format(tag))
-        series = cr.get_by_tag(tag)
-        debug( u"Found {0} series matching {1} ".format(len(series), tag) )
+    # if tag is not None:
+    #     debug(u"Fetching by tag {}...".format(tag))
+    #     series = cr.get_by_tag(tag)
+    #     debug( u"Found {0} series matching {1} ".format(len(series), tag) )
     urls = cr.get_random_free_episode_urls(ep_count,series)
     post_dl = partial(make_comment, frame_count=frame_count, caption_gen=caption_gen, out_path="output")
     yt = YT(post_dl, noprogress=noprogress)
@@ -102,8 +102,9 @@ def main():
     text_source = args.corpus
     if series is not None:
         series = re.split(r" *[,;] *", series)
-    if tag is "random":
-        tag = choice(CR.TAGS)
+    # if tag is "random":
+    #    tag = choice(CR.TAGS)
+    
     ## Either pick from nyer/lapham/corpora directory, or specify
     caption_gen = get_text_source(text_source)
 

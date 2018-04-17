@@ -1,8 +1,11 @@
 from random import choice, sample
 from functools import partial
 from itertools import chain
+from bs4 import BeautifulSoup
+from secrets import choice
 import os, re, logging, json, subprocess
 from os import environ as ENV
+from re import search, match, sub
 import glob
 from .slurfilter import blacklisted
 
@@ -106,11 +109,11 @@ def files_from_path(inputpaths, usable_extensions):
     found_files = []
     for inputpath in inputpaths:
         isdir = os.path.isdir(inputpath)
-        logger.debug("FILES_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
+        # logger.debug("FILES_FROM_PATH parsed out: {}, (is directory? {})".format(inputpath, isdir))
         if isdir:
             """Check for valid formats within directory"""
             for root, dirs, files in os.walk(inputpath):
-                logger.debug(u"Checking {}".format(root))
+                # logger.debug(u"Checking {}".format(root))
                 for ext in usable_extensions:
                     files = insensitive_glob(os.path.join(root, '*.{}'.format(ext)))
                     if len(files) > 0:
@@ -153,6 +156,21 @@ def get_probe_info(filename, include_streams=False, probe_bin="ffprobe"):
 
 def get_video_duration(filename):
     return get_probe_info(filename).get('format').get('duration')
+
+# New utility methods after Crunchyroll library sunset
+# These expect BeautifulSoup tag/objects for "ep"
+def get_ep_href(ep):
+    return f'https://crunchyroll.com{ep.attrs.get("href")}'
+
+def get_ep_number(ep):
+    return sub(r".+episode-(\d+).+", r"\1", ep.attrs.get("href"))
+
+def get_ep_title(ep):
+    return ep.find("p").text.strip()
+
+def get_ep_premium_flag(ep):
+    url = ep.find("img").attrs.get("src") or ep.find("img").attrs.get("data-thumbnailurl")
+    return bool(search("star.jpg", url))
 
 """ establish a basic module-level logger """
 logging.addLevelName(1,u"TRACE")
