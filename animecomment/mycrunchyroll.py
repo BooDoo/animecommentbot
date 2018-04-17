@@ -144,6 +144,6 @@ class Crunchyroll(object):
                 self.debug(u"appending {}".format(an_ep.get("href")))
                 urls.append(an_ep.get("href"))
             except Exception as e:
-                self.error("Skipping {} because: hard-coded subs? no free episodes?".format(an_ep.url))
+                self.error("Skipping {} because: hard-coded subs? no free episodes?".format(an_ep.get("href")))
                 self.error(e)
         return urls
