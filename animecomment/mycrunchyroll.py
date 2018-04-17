@@ -1,6 +1,6 @@
 from .utility import *
 import crunchyroll
-import requests
+import cfscrape
 from crunchyroll.apis.meta import MetaApi
 from crunchyroll.models import *
 from crunchyroll.util import return_collection
@@ -35,6 +35,7 @@ class Crunchyroll(object):
     def __init__(self, logger=None, log_level=logging.WARNING, force_fetch=False, force_api=False):
         self.logger = Logger(u'crunchyroll')
         self.debug, self.info, self.error = (self.logger.debug, self.logger.info, self.logger.error)
+        self.scraper = cfscrape.create_scraper()
 
         if force_api is True or Crunchyroll.have_api is False:
             self.info(u'we don\'t use the API any more!!')
@@ -78,12 +79,12 @@ class Crunchyroll(object):
     def get_random_series(self, count=1):
         series = []
         while len(series) < count:
-            res = requests.get('https://crunchyroll.com/random/anime')
+            res = self.scraper.get('https://crunchyroll.com/random/anime')
             series.append("/".join(res.url.split("/")[0:-1]))
         return series
 
     def parse_series(self, series):
-        list_soup = BeautifulSoup(requests.get(series).text, 'html.parser')
+        list_soup = BeautifulSoup(self.scraper.get(series).content, 'html.parser')
         eps = list_soup.select("a.episode")
         eps_meta = list(({
             "href": get_ep_href(ep),

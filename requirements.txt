@@ -7,3 +7,4 @@ pysrt>=1.1.1
 Requests>=2.18.4
 wordfilter>=0.2.6.2
 youtube_dl>=2018.4.16
+cfscrape>=1.9.5
